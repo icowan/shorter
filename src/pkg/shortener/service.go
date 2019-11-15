@@ -10,6 +10,11 @@ import (
 	"time"
 )
 
+var (
+	ErrRedirectNotFound = errors.New("Redirect Not Found")
+	ErrRedirectInvalid  = errors.New("Redirect Invalid")
+)
+
 //Service
 type Service interface {
 	Find(ctx context.Context, code string) (r *Redirect, err error)
