@@ -25,26 +25,21 @@ var (
 )
 
 func NewHTTPHandler(endpoints endpoint.Endpoints, options map[string][]kithttp.ServerOption) http.Handler {
-	//m := http.NewServeMux()
 	r := mux.NewRouter()
-	makeGetHandler(r, endpoints, options["Get"])
-	makePostHandler(r, endpoints, options["Post"])
-	return r
-}
 
-func makeGetHandler(m *mux.Router, endpoints endpoint.Endpoints, options []kithttp.ServerOption) {
-	m.Handle("/{code}", kithttp.NewServer(
+	r.Handle("/{code}", kithttp.NewServer(
 		endpoints.GetEndpoint,
 		decodeGetRequest,
 		encodeGetResponse,
-		options...)).Methods(http.MethodGet)
-}
-func makePostHandler(m *mux.Router, endpoints endpoint.Endpoints, options []kithttp.ServerOption) {
-	m.Handle("/", kithttp.NewServer(
+		options["Get"]...)).Methods(http.MethodGet)
+
+	r.Handle("/", kithttp.NewServer(
 		endpoints.PostEndpoint,
 		decodePostRequest,
 		decodePostResponse,
-		options...)).Methods(http.MethodGet)
+		options["Post"]...)).Methods(http.MethodPost)
+
+	return r
 }
 
 func decodePostRequest(_ context.Context, r *http.Request) (interface{}, error) {
@@ -89,14 +84,19 @@ func encodeGetResponse(ctx context.Context, w http.ResponseWriter, response inte
 		ErrorEncoder(ctx, f.Failed(), w)
 		return nil
 	}
-	resp := response.(*service.Redirect)
-	http.Redirect(w, nil, resp.URL, http.StatusFound)
+	if response == nil {
+		return service.ErrRedirectNotFound
+	}
+	resp := response.(endpoint.GetResponse)
+	redirect := resp.Data.(*service.Redirect)
+	http.Redirect(w, &http.Request{}, redirect.URL, http.StatusFound)
 	return
 }
 func ErrorEncoder(_ context.Context, err error, w http.ResponseWriter) {
 	w.WriteHeader(err2code(err))
 	_ = json.NewEncoder(w).Encode(errorWrapper{Error: err.Error()})
 }
+
 func ErrorDecoder(r *http.Response) error {
 	var w errorWrapper
 	if err := json.NewDecoder(r.Body).Decode(&w); err != nil {

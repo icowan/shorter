@@ -54,7 +54,7 @@ func Run() {
 	repo, err := mongodb.NewMongoRepository(*mongoAddr, "redirect", 60)
 	if err != nil {
 		_ = level.Error(logger).Log("connect", "db", "err", err.Error())
-		return
+		//return
 	}
 
 	svc := service.New(getServiceMiddleware(logger), repo)
