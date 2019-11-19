@@ -9,7 +9,7 @@ package mongodb
 
 import (
 	"context"
-	"github.com/icowan/shorter/src/pkg/shortener"
+	"github.com/icowan/shorter/pkg/service"
 	"github.com/pkg/errors"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -39,7 +39,7 @@ func newMongoClient(mongoURL string, mongoTimeout int) (*mongo.Client, error) {
 	return client, nil
 }
 
-func NewMongoRepository(mongoURL, mongoDB string, mongoTimeout int) (shortener.Repository, error) {
+func NewMongoRepository(mongoURL, mongoDB string, mongoTimeout int) (service.Repository, error) {
 	repo := &mongoRepository{
 		timeout:  time.Duration(mongoTimeout) * time.Second,
 		database: mongoDB,
@@ -53,7 +53,7 @@ func NewMongoRepository(mongoURL, mongoDB string, mongoTimeout int) (shortener.R
 	return repo, nil
 }
 
-func (m *mongoRepository) Find(code string) (redirect *shortener.Redirect, err error) {
+func (m *mongoRepository) Find(code string) (redirect *service.Redirect, err error) {
 	ctx, cancel := context.WithTimeout(context.Background(), m.timeout)
 	defer cancel()
 
@@ -69,7 +69,7 @@ func (m *mongoRepository) Find(code string) (redirect *shortener.Redirect, err e
 	return
 }
 
-func (m *mongoRepository) Store(redirect *shortener.Redirect) error {
+func (m *mongoRepository) Store(redirect *service.Redirect) error {
 	ctx, cancel := context.WithTimeout(context.Background(), m.timeout)
 	defer cancel()
 
