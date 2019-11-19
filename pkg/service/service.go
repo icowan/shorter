@@ -17,7 +17,8 @@ import (
 )
 
 var (
-	ErrRedirectNotFound = errors.New("not found")
+	ErrRedirectNotFound = errors.New("Redirect Not Found")
+	ErrRedirectInvalid  = errors.New("Redirect Invalid")
 )
 
 type Service interface {

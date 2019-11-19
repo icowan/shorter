@@ -1,4 +1,5 @@
 FROM golang:1.13.4-alpine3.10 as build-env
+#FROM golang:1.13.4-windowsservercore-1803 as build-env
 
 ENV GO111MODULE=on
 ENV BUILDPATH=github.com/icowan/shorter
@@ -20,4 +21,4 @@ RUN apk update \
 COPY --from=build-env /go/bin/shorter /go/bin/shorter
 
 WORKDIR /go/bin/
-CMD ["/go/bin/shorter", "start", "-p", ":8080", "-c", "/etc/shorter/app.cfg"]
+CMD ["/go/bin/shorter", "-http-addr", ":8080"]

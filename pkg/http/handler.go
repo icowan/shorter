@@ -10,11 +10,13 @@ package http
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	kithttp "github.com/go-kit/kit/transport/http"
 	"github.com/gorilla/mux"
 	"github.com/icowan/shorter/pkg/endpoint"
 	"github.com/icowan/shorter/pkg/service"
+	"github.com/pkg/errors"
+	"gopkg.in/dealancer/validate.v2"
+	"io/ioutil"
 	"net/http"
 )
 
@@ -41,13 +43,32 @@ func makePostHandler(m *mux.Router, endpoints endpoint.Endpoints, options []kith
 	m.Handle("/", kithttp.NewServer(
 		endpoints.PostEndpoint,
 		decodePostRequest,
-		encodeGetResponse,
+		decodePostResponse,
 		options...)).Methods(http.MethodGet)
 }
 
 func decodePostRequest(_ context.Context, r *http.Request) (interface{}, error) {
+	var req endpoint.PostRequest
+	b, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		return nil, err
+	}
+	if err = json.Unmarshal(b, &req); err != nil {
+		return nil, err
+	}
+	if err := validate.Validate(req); err != nil {
+		return nil, errors.Wrap(service.ErrRedirectInvalid, "service.Redirect.Store")
+	}
+	return req, nil
+}
 
-	return nil, nil
+func decodePostResponse(ctx context.Context, w http.ResponseWriter, response interface{}) (err error) {
+	if f, ok := response.(endpoint.Failure); ok && f.Failed() != nil {
+		ErrorEncoder(ctx, f.Failed(), w)
+		return nil
+	}
+	err = json.NewEncoder(w).Encode(response)
+	return
 }
 
 func decodeGetRequest(_ context.Context, r *http.Request) (interface{}, error) {
