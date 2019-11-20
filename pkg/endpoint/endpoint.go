@@ -11,6 +11,7 @@ import (
 	"context"
 	"github.com/go-kit/kit/endpoint"
 	"github.com/icowan/shorter/pkg/service"
+	"time"
 )
 
 type Endpoints struct {
@@ -41,8 +42,20 @@ type PostRequest struct {
 }
 
 type GetResponse struct {
-	Err  error
-	Data interface{}
+	Err  error       `json:"err"`
+	Data interface{} `json:"data"`
+}
+
+type dataResponse struct {
+	Url       string    `json:"url"`
+	Code      string    `json:"code"`
+	CreatedAt time.Time `json:"created_at"`
+	ShortUri  string    `json:"short_uri"`
+}
+
+type PostResponse struct {
+	Err  error        `json:"err"`
+	Data dataResponse `json:"data"`
 }
 
 func MakeGetEndpoint(s service.Service) endpoint.Endpoint {
@@ -56,8 +69,15 @@ func MakeGetEndpoint(s service.Service) endpoint.Endpoint {
 func MakePostEndpoint(s service.Service) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (response interface{}, err error) {
 		req := request.(PostRequest)
-		err = s.Post(ctx, req.URL)
-		return GetResponse{Err: err}, err
+		res, err := s.Post(ctx, req.URL)
+		resp := dataResponse{}
+		if err == nil && res != nil {
+			resp.Code = res.Code
+			resp.CreatedAt = res.CreatedAt
+			resp.Url = req.URL
+			resp.ShortUri = res.URL
+		}
+		return PostResponse{Err: err, Data: resp}, err
 	}
 }
 

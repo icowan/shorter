@@ -32,7 +32,7 @@ func (l loggingMiddleware) Get(ctx context.Context, code string) (rs *Redirect, 
 	return l.next.Get(ctx, code)
 }
 
-func (l loggingMiddleware) Post(ctx context.Context, uri string) (err error) {
+func (l loggingMiddleware) Post(ctx context.Context, uri string) (redirect *Redirect, err error) {
 	defer func() {
 		_ = l.logger.Log("method", "Post", "uri", uri, "err", err)
 	}()

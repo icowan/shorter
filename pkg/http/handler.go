@@ -78,7 +78,6 @@ func decodeGetRequest(_ context.Context, r *http.Request) (interface{}, error) {
 	return req, nil
 }
 
-// encodeSayResponse is a transport/http.EncodeResponseFunc that encodes
 func encodeGetResponse(ctx context.Context, w http.ResponseWriter, response interface{}) (err error) {
 	if f, ok := response.(endpoint.Failure); ok && f.Failed() != nil {
 		ErrorEncoder(ctx, f.Failed(), w)
@@ -92,6 +91,7 @@ func encodeGetResponse(ctx context.Context, w http.ResponseWriter, response inte
 	http.Redirect(w, &http.Request{}, redirect.URL, http.StatusFound)
 	return
 }
+
 func ErrorEncoder(_ context.Context, err error, w http.ResponseWriter) {
 	w.WriteHeader(err2code(err))
 	_ = json.NewEncoder(w).Encode(errorWrapper{Error: err.Error()})

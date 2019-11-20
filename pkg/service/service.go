@@ -13,6 +13,7 @@ import (
 	"github.com/go-kit/kit/log/level"
 	"github.com/pkg/errors"
 	"github.com/teris-io/shortid"
+	"strings"
 	"time"
 )
 
@@ -23,39 +24,50 @@ var (
 
 type Service interface {
 	Get(ctx context.Context, code string) (redirect *Redirect, err error)
-	Post(ctx context.Context, domain string) error
+	Post(ctx context.Context, domain string) (redirect *Redirect, err error)
 }
 
 type service struct {
 	repository Repository
 	logger     log.Logger
+	shortUri   string
 }
 
-func New(middleware []Middleware, repository Repository) Service {
-	var svc Service = NewService(repository)
+func New(middleware []Middleware, repository Repository, shortUri string) Service {
+	var svc Service = NewService(repository, shortUri)
 	for _, m := range middleware {
 		svc = m(svc)
 	}
 	return svc
 }
 
-func NewService(repository Repository) Service {
-	return &service{repository: repository}
+func NewService(repository Repository, shortUri string) Service {
+	return &service{repository: repository, shortUri: shortUri}
 }
 
 func (s *service) Get(ctx context.Context, code string) (redirect *Redirect, err error) {
 	return s.repository.Find(code)
 }
 
-func (s *service) Post(ctx context.Context, domain string) error {
+func (s *service) Post(ctx context.Context, domain string) (redirect *Redirect, err error) {
 	now := time.Now()
 	local, err := time.LoadLocation("Asia/Shanghai")
 	if err != nil {
 		_ = level.Warn(s.logger).Log("time", "LoadLocation", "err", err.Error())
 	}
-	return s.repository.Store(&Redirect{
-		Code:      shortid.MustGenerate(),
+
+	code := shortid.MustGenerate()
+
+	redirect = &Redirect{
+		Code:      code,
 		URL:       domain,
 		CreatedAt: now.In(local),
-	})
+	}
+
+	if err = s.repository.Store(redirect); err != nil {
+		return
+	}
+
+	redirect.URL = strings.TrimRight(s.shortUri, "/") + "/" + code
+	return
 }

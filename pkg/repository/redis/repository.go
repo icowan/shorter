@@ -10,6 +10,8 @@ package redis
 import (
 	"fmt"
 	"github.com/icowan/shorter/pkg/service"
+	"github.com/pkg/errors"
+	"time"
 )
 
 type redisRepository struct {
@@ -27,18 +29,41 @@ func (m *redisRepository) generateKey(code string) string {
 }
 
 func (m *redisRepository) Find(code string) (redirect *service.Redirect, err error) {
-	//key := m.generateKey(code)
-	//data, err := m.client.HGet("redirect", code)
-	//if err != nil {
-	//	return nil, errors.Wrap(err, "repository.Redirect.Find")
-	//}
-	//if len(data) == 0 {
-	//	return nil, errors.Wrap(service.ErrRedirectNotFound, "repository.Redirect.Find")
-	//}
+	data, err := m.client.HGetAll(m.generateKey(code))
+	if err != nil {
+		return nil, errors.Wrap(err, "repository.Redirect.Find")
+	}
 
-	return
+	if len(data) == 0 {
+		return nil, errors.Wrap(service.ErrRedirectNotFound, "repository.Redirect.Find")
+	}
+
+	now, err := time.Parse("2006-01-02 15:04:05", data["created_at"])
+	if err != nil {
+		return
+	}
+	local, err := time.LoadLocation("Asia/Shanghai")
+	if err != nil {
+		return
+	}
+
+	return &service.Redirect{
+		Code:      data["code"],
+		URL:       data["url"],
+		CreatedAt: now.In(local),
+	}, nil
 }
 
 func (m *redisRepository) Store(redirect *service.Redirect) error {
+	data := map[string]interface{}{
+		"code":       redirect.Code,
+		"url":        redirect.URL,
+		"created_at": redirect.CreatedAt,
+	}
+
+	err := m.client.HMSet(m.generateKey(redirect.Code), data)
+	if err != nil {
+		return errors.Wrap(err, "repository.Redirect.Store")
+	}
 	return nil
 }

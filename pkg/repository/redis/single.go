@@ -102,3 +102,7 @@ func (c *single) Publish(channel string, message interface{}) error {
 func (c *single) HGetAll(key string) (map[string]string, error) {
 	return c.client.HGetAll(c.setPrefix(key)).Result()
 }
+
+func (c *single) HMSet(k string, fields map[string]interface{}) (err error) {
+	return c.client.HMSet(c.setPrefix(k), fields).Err()
+}

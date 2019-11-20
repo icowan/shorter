@@ -14,50 +14,74 @@ import (
 	"github.com/go-kit/kit/log/level"
 	"github.com/icowan/shorter/pkg/endpoint"
 	svchttp "github.com/icowan/shorter/pkg/http"
+	"github.com/icowan/shorter/pkg/logging"
 	"github.com/icowan/shorter/pkg/repository/mongodb"
+	"github.com/icowan/shorter/pkg/repository/redis"
 	"github.com/icowan/shorter/pkg/service"
-	prometheus2 "github.com/prometheus/client_golang/prometheus"
 	"net"
 	"net/http"
 	"os"
 	"os/signal"
+	"strconv"
 	"syscall"
 
 	"github.com/go-kit/kit/log"
-	"github.com/go-kit/kit/metrics/prometheus"
 	"github.com/oklog/oklog/pkg/group"
 )
 
 var logger log.Logger
 
-var fs = flag.NewFlagSet("hello", flag.ExitOnError)
-var httpAddr = fs.String("http-addr", ":8080", "HTTP listen address")
-var mongoAddr = fs.String("mongo-addr", "mongodb://localhost:32768", "mongodb uri, default: mongodb://localhost:27017")
-var dbDrive = fs.String("db-drive", "mongo", "db drive type, default: mongo")
+var (
+	fs            = flag.NewFlagSet("hello", flag.ExitOnError)
+	httpAddr      = fs.String("http-addr", ":8080", "HTTP listen address")
+	dbDrive       = fs.String("db-drive", "mongo", "db drive type, default: mongo")
+	mongoAddr     = fs.String("mongo-addr", "mongodb://localhost:32768", "mongodb uri, default: mongodb://localhost:27017")
+	redisDrive    = fs.String("redis-drive", "single", "redis drive: single or cluster")
+	redisHosts    = fs.String("redis-hosts", "localhost:6379", "redis hosts, many ';' split")
+	redisPassword = fs.String("redis-password", "", "redis password")
+	redisDB       = fs.String("redis-db", "0", "redis db")
+	shortUri      = fs.String("short-uri", "http://localhost", "short url")
+	logPath       = fs.String("log-path", "", "logging file path.")
+	logLevel      = fs.String("log-level", "all", "logging level.")
+	rateBucketNum = 20
+	err           error
+)
 
 func Run() {
 	if err := fs.Parse(os.Args[1:]); err != nil {
 		panic(err)
 	}
 
-	if addr := os.Getenv("MONGO_DB"); addr != "" {
-		mongoAddr = &addr
-	}
-	if drive := os.Getenv("DB_DRIVE"); drive != "" {
-		dbDrive = &drive
+	dbDrive = envString("DB_DRIVE", dbDrive)
+	mongoAddr = envString("MONGO_ADDR", mongoAddr)
+	redisDrive = envString("REDIS_DRIVE", redisDrive)
+	redisHosts = envString("REDIS_HOSTS", redisHosts)
+	redisPassword = envString("REDIS_PASSWORD", redisPassword)
+	redisDB = envString("REDIS_DB", redisDB)
+	shortUri = envString("SHORT_URI", shortUri)
+	logPath = envString("LOG_PATH", logPath)
+	logLevel = envString("LOG_LEVEL", logLevel)
+
+	logger = logging.SetLogging(logger, logPath, logLevel)
+
+	var repo service.Repository
+	switch *dbDrive {
+	case "mongo":
+		repo, err = mongodb.NewMongoRepository(*mongoAddr, "redirect", 60)
+		if err != nil {
+			_ = level.Error(logger).Log("connect", "db", "err", err.Error())
+			return
+		}
+	case "redis":
+		db, _ := strconv.Atoi(*redisDB)
+		repo, err = redis.NewRedisRepository(redis.RedisDrive(*redisDrive), *redisHosts, *redisPassword, "shorter", db)
+		if err != nil {
+			_ = level.Error(logger).Log("connect", "db", "err", err.Error())
+			return
+		}
 	}
 
-	logger = log.NewLogfmtLogger(log.StdlibWriter{})
-	logger = log.With(logger, "caller", log.DefaultCaller)
-	logger = level.NewFilter(logger, level.AllowAll())
-
-	repo, err := mongodb.NewMongoRepository(*mongoAddr, "redirect", 60)
-	if err != nil {
-		_ = level.Error(logger).Log("connect", "db", "err", err.Error())
-		//return
-	}
-
-	svc := service.New(getServiceMiddleware(logger), repo)
+	svc := service.New(getServiceMiddleware(logger), repo, *shortUri)
 	eps := endpoint.New(svc, getEndpointMiddleware(logger))
 	g := createService(eps)
 	initCancelInterrupt(g)
@@ -88,13 +112,7 @@ func getServiceMiddleware(logger log.Logger) (mw []service.Middleware) {
 }
 func getEndpointMiddleware(logger log.Logger) (mw map[string][]kitendpoint.Middleware) {
 	mw = map[string][]kitendpoint.Middleware{}
-	duration := prometheus.NewSummaryFrom(prometheus2.SummaryOpts{
-		Help:      "Request duration in seconds.",
-		Name:      "request_duration_seconds",
-		Namespace: "example",
-		Subsystem: "hello",
-	}, []string{"method", "success"})
-	addDefaultEndpointMiddleware(logger, duration, mw)
+	mw = addDefaultEndpointMiddleware(logger, mw)
 
 	return
 }
@@ -130,4 +148,12 @@ func accessControl(h http.Handler, logger log.Logger, headers map[string]string)
 		_ = logger.Log("remote-addr", r.RemoteAddr, "uri", r.RequestURI, "method", r.Method, "length", r.ContentLength)
 		h.ServeHTTP(w, r)
 	})
+}
+
+func envString(env string, fallback *string) *string {
+	e := os.Getenv(env)
+	if e == "" {
+		return fallback
+	}
+	return &e
 }

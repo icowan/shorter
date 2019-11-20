@@ -19,6 +19,7 @@ type RedisInterface interface {
 	Del(k string) (err error)
 	HSet(k string, field string, v interface{}) (err error)
 	HGet(k string, field string) (res string, err error)
+	HMSet(k string, fields map[string]interface{}) (err error)
 	HGetAll(key string) (map[string]string, error)
 	HDelAll(k string) (err error)
 	HDel(k string, field string) (err error)
