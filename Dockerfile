@@ -18,6 +18,7 @@ RUN apk update \
         && update-ca-certificates 2>/dev/null || true
 
 COPY --from=build-env /go/bin/cmd /go/bin/shorter
+COPY ./dist /go/bin/dist
 
 WORKDIR /go/bin/
 CMD ["/go/bin/shorter", "-http-addr", ":8080"]
