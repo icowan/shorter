@@ -6,7 +6,7 @@ ENV GOPROXY=https://goproxy.io
 ENV GOPATH=/go
 RUN mkdir -p /go/src/${BUILDPATH}
 COPY ./ /go/src/${BUILDPATH}
-RUN cd /go/src/${BUILDPATH} && CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go install -v
+RUN cd /go/src/${BUILDPATH} && CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go install ./cmd/ -v
 
 FROM alpine:latest
 
