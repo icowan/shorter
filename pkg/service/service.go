@@ -33,16 +33,16 @@ type service struct {
 	shortUri   string
 }
 
-func New(middleware []Middleware, repository Repository, shortUri string) Service {
-	var svc Service = NewService(repository, shortUri)
+func New(middleware []Middleware, logger log.Logger, repository Repository, shortUri string) Service {
+	var svc Service = NewService(logger, repository, shortUri)
 	for _, m := range middleware {
 		svc = m(svc)
 	}
 	return svc
 }
 
-func NewService(repository Repository, shortUri string) Service {
-	return &service{repository: repository, shortUri: shortUri}
+func NewService(logger log.Logger, repository Repository, shortUri string) Service {
+	return &service{repository: repository, shortUri: shortUri, logger: logger}
 }
 
 func (s *service) Get(ctx context.Context, code string) (redirect *Redirect, err error) {
