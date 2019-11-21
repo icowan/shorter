@@ -81,7 +81,7 @@ func Run() {
 		}
 	}
 
-	svc := service.New(getServiceMiddleware(logger), repo, *shortUri)
+	svc := service.New(getServiceMiddleware(logger), logger, repo, *shortUri)
 	eps := endpoint.New(svc, getEndpointMiddleware(logger))
 	g := createService(eps)
 	initCancelInterrupt(g)
