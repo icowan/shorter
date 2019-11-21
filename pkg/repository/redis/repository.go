@@ -11,7 +11,6 @@ import (
 	"fmt"
 	"github.com/icowan/shorter/pkg/service"
 	"github.com/pkg/errors"
-	"time"
 )
 
 type redisRepository struct {
@@ -38,19 +37,19 @@ func (m *redisRepository) Find(code string) (redirect *service.Redirect, err err
 		return nil, errors.Wrap(service.ErrRedirectNotFound, "repository.Redirect.Find")
 	}
 
-	now, err := time.Parse("2006-01-02 15:04:05", data["created_at"])
-	if err != nil {
-		return
-	}
-	local, err := time.LoadLocation("Asia/Shanghai")
-	if err != nil {
-		return
-	}
+	//now, err := time.Parse("2006-01-02 15:04:05", data["created_at"])
+	//if err != nil {
+	//	return
+	//}
+	//local, err := time.LoadLocation("Asia/Shanghai")
+	//if err != nil {
+	//	return
+	//}
 
 	return &service.Redirect{
-		Code:      data["code"],
-		URL:       data["url"],
-		CreatedAt: now.In(local),
+		Code: data["code"],
+		URL:  data["url"],
+		//CreatedAt: now.In(local),
 	}, nil
 }
 
