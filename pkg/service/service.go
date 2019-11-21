@@ -53,7 +53,7 @@ func (s *service) Post(ctx context.Context, domain string) (redirect *Redirect, 
 	now := time.Now()
 	local, err := time.LoadLocation("Asia/Shanghai")
 	if err != nil {
-		_ = level.Warn(s.logger).Log("time", "LoadLocation", "err", err.Error())
+		_ = level.Warn(s.logger).Log("time", "LoadLocation", "err", err)
 	}
 
 	code := shortid.MustGenerate()
