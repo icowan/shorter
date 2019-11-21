@@ -86,7 +86,6 @@ func Run() {
 	g := createService(eps)
 	initCancelInterrupt(g)
 	_ = logger.Log("exit", g.Run())
-
 }
 
 func initHttpHandler(endpoints endpoint.Endpoints, g *group.Group) {
