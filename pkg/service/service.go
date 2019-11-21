@@ -52,7 +52,9 @@ func (s *service) Get(ctx context.Context, code string) (redirect *Redirect, err
 func (s *service) Post(ctx context.Context, domain string) (redirect *Redirect, err error) {
 	now := time.Now()
 	local, err := time.LoadLocation("Asia/Shanghai")
-	if err != nil {
+	if err == nil {
+		now = now.In(local)
+	} else {
 		_ = level.Warn(s.logger).Log("time", "LoadLocation", "err", err)
 	}
 
@@ -61,7 +63,7 @@ func (s *service) Post(ctx context.Context, domain string) (redirect *Redirect, 
 	redirect = &Redirect{
 		Code:      code,
 		URL:       domain,
-		CreatedAt: now.In(local),
+		CreatedAt: now,
 	}
 
 	if err = s.repository.Store(redirect); err != nil {
