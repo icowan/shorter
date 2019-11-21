@@ -1,9 +1,8 @@
 FROM golang:1.13.4-alpine3.10 as build-env
-#FROM golang:1.13.4-windowsservercore-1803 as build-env
 
 ENV GO111MODULE=on
 ENV BUILDPATH=github.com/icowan/shorter
-ENV GOPROXY=https://goproxy.cn
+ENV GOPROXY=https://goproxy.io
 ENV GOPATH=/go
 RUN mkdir -p /go/src/${BUILDPATH}
 COPY ./ /go/src/${BUILDPATH}

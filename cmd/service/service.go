@@ -88,6 +88,7 @@ func Run() {
 	_ = logger.Log("exit", g.Run())
 
 }
+
 func initHttpHandler(endpoints endpoint.Endpoints, g *group.Group) {
 	options := defaultHttpOptions(logger)
 
@@ -98,7 +99,11 @@ func initHttpHandler(endpoints endpoint.Endpoints, g *group.Group) {
 	}
 	g.Add(func() error {
 		_ = level.Debug(logger).Log("transport", "HTTP", "addr", *httpAddr)
-		return http.Serve(httpListener, accessControl(httpHandler, logger, nil))
+		return http.Serve(httpListener, accessControl(httpHandler, logger, map[string]string{
+			"Access-Control-Allow-Origin":  "http://localhost:8000",
+			"Access-Control-Allow-Methods": "GET,POST,OPTIONS,PUT,DELETE",
+			"Access-Control-Allow-Headers": "Origin,Content-Type,mode,Authorization,x-requested-with,Access-Control-Allow-Origin,Access-Control-Allow-Credentials",
+		}))
 	}, func(error) {
 		_ = httpListener.Close()
 	})

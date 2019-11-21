@@ -26,6 +26,10 @@ var (
 
 func NewHTTPHandler(endpoints endpoint.Endpoints, options map[string][]kithttp.ServerOption) http.Handler {
 	r := mux.NewRouter()
+	r.Handle("/", http.FileServer(http.Dir("./dist"))).Methods(http.MethodGet)
+	r.Handle("/umi.js", http.FileServer(http.Dir("./dist"))).Methods(http.MethodGet)
+	r.Handle("/umi.css", http.FileServer(http.Dir("./dist"))).Methods(http.MethodGet)
+	r.Handle("/favicon.ico", http.FileServer(http.Dir("./dist"))).Methods(http.MethodGet)
 
 	r.Handle("/{code}", kithttp.NewServer(
 		endpoints.GetEndpoint,
@@ -108,7 +112,7 @@ func ErrorDecoder(r *http.Response) error {
 // This is used to set the http status, see an example here :
 // https://github.com/go-kit/kit/blob/master/examples/addsvc/pkg/addtransport/http.go#L133
 func err2code(err error) int {
-	return http.StatusInternalServerError
+	return http.StatusOK
 }
 
 type errorWrapper struct {
