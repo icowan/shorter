@@ -149,7 +149,7 @@ func accessControl(h http.Handler, logger log.Logger, headers map[string]string)
 			return
 		}
 
-		_ = logger.Log("remote-addr", r.RemoteAddr, "uri", r.RequestURI, "method", r.Method, "length", r.ContentLength)
+		_ = level.Info(logger).Log("remote-addr", r.RemoteAddr, "uri", r.RequestURI, "method", r.Method, "length", r.ContentLength)
 		h.ServeHTTP(w, r)
 	})
 }
