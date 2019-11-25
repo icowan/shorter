@@ -11,13 +11,14 @@ import (
 	"context"
 	"encoding/json"
 	kithttp "github.com/go-kit/kit/transport/http"
+	"github.com/go-playground/validator/v10"
 	"github.com/gorilla/mux"
 	"github.com/icowan/shorter/pkg/endpoint"
 	"github.com/icowan/shorter/pkg/service"
 	"github.com/pkg/errors"
-	"gopkg.in/dealancer/validate.v2"
 	"io/ioutil"
 	"net/http"
+	"os"
 )
 
 var (
@@ -55,8 +56,9 @@ func decodePostRequest(_ context.Context, r *http.Request) (interface{}, error) 
 	if err = json.Unmarshal(b, &req); err != nil {
 		return nil, err
 	}
-	if err := validate.Validate(req); err != nil {
-		return nil, errors.Wrap(service.ErrRedirectInvalid, "service.Redirect.Store")
+	validate := validator.New()
+	if err := validate.Struct(req); err != nil {
+		return nil, errors.Wrap(err, service.ErrRedirectInvalid.Error())
 	}
 	return req, nil
 }
@@ -84,11 +86,8 @@ func decodeGetRequest(_ context.Context, r *http.Request) (interface{}, error) {
 
 func encodeGetResponse(ctx context.Context, w http.ResponseWriter, response interface{}) (err error) {
 	if f, ok := response.(endpoint.Failure); ok && f.Failed() != nil {
-		ErrorEncoder(ctx, f.Failed(), w)
+		ErrorRedirect(ctx, f.Failed(), w)
 		return nil
-	}
-	if response == nil {
-		return service.ErrRedirectNotFound
 	}
 	resp := response.(endpoint.GetResponse)
 	redirect := resp.Data.(*service.Redirect)
@@ -101,6 +100,10 @@ func ErrorEncoder(_ context.Context, err error, w http.ResponseWriter) {
 	_ = json.NewEncoder(w).Encode(errorWrapper{Error: err.Error()})
 }
 
+func ErrorRedirect(_ context.Context, err error, w http.ResponseWriter) {
+	http.Redirect(w, &http.Request{}, os.Getenv("SHORT_URI"), http.StatusFound)
+}
+
 func ErrorDecoder(r *http.Response) error {
 	var w errorWrapper
 	if err := json.NewDecoder(r.Body).Decode(&w); err != nil {
@@ -109,8 +112,6 @@ func ErrorDecoder(r *http.Response) error {
 	return errors.New(w.Error)
 }
 
-// This is used to set the http status, see an example here :
-// https://github.com/go-kit/kit/blob/master/examples/addsvc/pkg/addtransport/http.go#L133
 func err2code(err error) int {
 	return http.StatusOK
 }

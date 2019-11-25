@@ -38,7 +38,7 @@ type GetRequest struct {
 }
 
 type PostRequest struct {
-	URL string `json:"url" validate:"empty=false & format=url"`
+	URL string `json:"url" validate:"required,url,lt=255"`
 }
 
 type GetResponse struct {

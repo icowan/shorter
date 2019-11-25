@@ -28,7 +28,7 @@ func createService(endpoints endpoint.Endpoints) (g *group.Group) {
 
 func defaultHttpOptions(logger log.Logger) map[string][]kithttp.ServerOption {
 	options := map[string][]kithttp.ServerOption{"Get": {
-		kithttp.ServerErrorEncoder(http.ErrorEncoder),
+		kithttp.ServerErrorEncoder(http.ErrorRedirect),
 		kithttp.ServerErrorHandler(transport.NewLogErrorHandler(logger)),
 		kithttp.ServerBefore(kithttp.PopulateRequestContext),
 	},

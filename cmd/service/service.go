@@ -43,7 +43,8 @@ var (
 	shortUri      = fs.String("short-uri", "http://localhost", "short url")
 	logPath       = fs.String("log-path", "", "logging file path.")
 	logLevel      = fs.String("log-level", "all", "logging level.")
-	rateBucketNum = 20
+	devCors       = fs.String("dev-cors", "false", "is develop")
+	rateBucketNum = 10
 	err           error
 )
 
@@ -61,6 +62,7 @@ func Run() {
 	shortUri = envString("SHORT_URI", shortUri)
 	logPath = envString("LOG_PATH", logPath)
 	logLevel = envString("LOG_LEVEL", logLevel)
+	devCors = envString("DEV_CORS", devCors)
 
 	logger = logging.SetLogging(logger, logPath, logLevel)
 
@@ -98,11 +100,15 @@ func initHttpHandler(endpoints endpoint.Endpoints, g *group.Group) {
 	}
 	g.Add(func() error {
 		_ = level.Debug(logger).Log("transport", "HTTP", "addr", *httpAddr)
-		return http.Serve(httpListener, accessControl(httpHandler, logger, map[string]string{
-			"Access-Control-Allow-Origin":  "http://localhost:8000",
-			"Access-Control-Allow-Methods": "GET,POST,OPTIONS,PUT,DELETE",
-			"Access-Control-Allow-Headers": "Origin,Content-Type,mode,Authorization,x-requested-with,Access-Control-Allow-Origin,Access-Control-Allow-Credentials",
-		}))
+		headers := make(map[string]string)
+		if isDev, _ := strconv.ParseBool(*devCors); isDev {
+			headers = map[string]string{
+				"Access-Control-Allow-Origin":  "http://localhost:8000",
+				"Access-Control-Allow-Methods": "GET,POST,OPTIONS,PUT,DELETE",
+				"Access-Control-Allow-Headers": "Origin,Content-Type,mode,Authorization,x-requested-with,Access-Control-Allow-Origin,Access-Control-Allow-Credentials",
+			}
+		}
+		return http.Serve(httpListener, accessControl(httpHandler, logger, headers))
 	}, func(error) {
 		_ = httpListener.Close()
 	})
@@ -157,6 +163,7 @@ func accessControl(h http.Handler, logger log.Logger, headers map[string]string)
 func envString(env string, fallback *string) *string {
 	e := os.Getenv(env)
 	if e == "" {
+		_ = os.Setenv(env, *fallback)
 		return fallback
 	}
 	return &e
