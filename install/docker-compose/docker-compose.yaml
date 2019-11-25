@@ -1,0 +1,28 @@
+version: '3'
+services:
+  mongo:
+    image: mongo:latest
+    restart: always
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: admin
+    expose:
+      - "27017"
+    ports:
+      - "27017:27017"
+
+  shorter:
+    image: dudulu/shorter:latest
+    environment:
+      DB_DRIVE: "mongo"
+      MONGO_ADDR: "mongodb://root:admin@mongo:27017/?authSource=admin"
+      SHORT_URI: "http://localhost:8080"
+      LOG_LEVEL: "debug"
+    restart: always
+    depends_on:
+      - mongo
+    ports:
+      - "8080:8080"
+    build:
+      context: ../../
+      dockerfile: Dockerfile

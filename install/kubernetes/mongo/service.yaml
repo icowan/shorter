@@ -1,0 +1,14 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: mongo
+  labels:
+    app: mongo
+spec:
+  ports:
+    - name: tcp-27017
+      protocol: TCP
+      port: 27017
+      targetPort: 27017
+  selector:
+    app: mongo

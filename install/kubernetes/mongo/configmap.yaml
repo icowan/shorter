@@ -1,0 +1,15 @@
+apiVersion: v1
+data:
+  mongo.conf: |
+    systemLog:
+       destination: file
+       path: "/var/log/mongodb/mongod.log"
+       logAppend: true
+    storage:
+       journal:
+          enabled: true
+    processManagement:
+       fork: true
+kind: ConfigMap
+metadata:
+  name: mongo

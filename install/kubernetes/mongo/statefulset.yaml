@@ -1,0 +1,53 @@
+---
+kind: StatefulSet
+apiVersion: apps/v1
+metadata:
+  name: mongo
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mongo
+  template:
+    metadata:
+      labels:
+        app: mongo
+    spec:
+      volumes:
+        - name: mongo-config
+            configMap:
+              name: mongo
+      containers:
+        - name: mongo
+          image: mongo:latest
+          ports:
+            - name: tcp-27017
+              containerPort: 27017
+              protocol: TCP
+          resources:
+            limits:
+              memory: 128Mi
+            requests:
+              memory: 64Mi
+          volumeMounts:
+            - name: mongo-data
+              mountPath: /data/db
+            - name: mongo-config
+              mountPath: /etc/mongo/mongod.conf
+              readOnly: true
+              subPath: mongod.conf
+          imagePullPolicy: IfNotPresent
+      restartPolicy: Always
+      hostname: mongo
+  volumeClaimTemplates:
+    - metadata:
+        name: mongo-data
+        creationTimestamp:
+      spec:
+        accessModes:
+          - ReadWriteOnce
+        resources:
+          requests:
+            storage: 512Mi
+        storageClassName: nfs-storage
+  serviceName: mongo

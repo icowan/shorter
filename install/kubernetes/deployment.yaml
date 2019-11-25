@@ -21,11 +21,8 @@ spec:
       labels:
         app: shorter
         name: shorter
+        version: latest
     spec:
-      volumes:
-        - name: "tz-config"
-          hostPath:
-            path: "/usr/share/zoneinfo/Asia/Shanghai"
       containers:
         - image: dudulu/shorter:latest
           name: shorter
@@ -74,9 +71,6 @@ spec:
                 fieldRef:
                   apiVersion: v1
                   fieldPath: status.podIP
-          volumeMounts:
-            - name: tz-config
-              mountPath: /etc/localtime
           livenessProbe:
             failureThreshold: 3
             httpGet:
