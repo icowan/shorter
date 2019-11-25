@@ -4,7 +4,7 @@
 
 ![](http://source.qiniu.cnd.nsini.com/images/2019/11/48/bd/64/20191125-bfefea2da3a147e7616cfc58bd348c0b.jpeg?imageView2/2/w/1280/interlace/0/q/70)
 
-## 平台演示
+## 演示
 
 演示地址: [https://r.nsini.com](https://r.nsini.com)
 
@@ -56,7 +56,3 @@ $ make run
 
 ![支付宝](https://lattecake.oss-cn-beijing.aliyuncs.com/static%2Fimages%2Freward%2Falipay-RMB-xxx.png)
 ![微信](https://lattecake.oss-cn-beijing.aliyuncs.com/static%2Fimages%2Freward%2Fweixin-RMB-xxx.JPG)
-
-### 技术交流
-
-- QQ群: 722578340
