@@ -10,7 +10,6 @@ package service
 import (
 	"context"
 	"github.com/go-kit/kit/log"
-	"github.com/go-kit/kit/log/level"
 	"github.com/pkg/errors"
 	"github.com/teris-io/shortid"
 	"strings"
@@ -54,10 +53,7 @@ func (s *service) Post(ctx context.Context, domain string) (redirect *Redirect, 
 	now = now.In(time.Local)
 	code := shortid.MustGenerate()
 
-	if res, err := s.Get(ctx, code); err == nil && res != nil {
-		_ = level.Info(s.logger).Log("code", "exists", "code", code)
-		return res, nil
-	}
+	// todo 考虑如何处理垃圾数据的问题 得复的url 不同的code
 
 	redirect = &Redirect{
 		Code:      code,
