@@ -51,14 +51,13 @@ func (s *service) Get(ctx context.Context, code string) (redirect *Redirect, err
 
 func (s *service) Post(ctx context.Context, domain string) (redirect *Redirect, err error) {
 	now := time.Now()
-	local, err := time.LoadLocation("Asia/Shanghai")
-	if err == nil {
-		now = now.In(local)
-	} else {
-		_ = level.Warn(s.logger).Log("time", "LoadLocation", "err", err)
-	}
-
+	now = now.In(time.Local)
 	code := shortid.MustGenerate()
+
+	if res, err := s.Get(ctx, code); err == nil && res != nil {
+		_ = level.Info(s.logger).Log("code", "esists")
+		return res, nil
+	}
 
 	redirect = &Redirect{
 		Code:      code,
