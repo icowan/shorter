@@ -55,7 +55,7 @@ func (s *service) Post(ctx context.Context, domain string) (redirect *Redirect, 
 	code := shortid.MustGenerate()
 
 	if res, err := s.Get(ctx, code); err == nil && res != nil {
-		_ = level.Info(s.logger).Log("code", "esists")
+		_ = level.Info(s.logger).Log("code", "exists", "code", code)
 		return res, nil
 	}
 
