@@ -58,7 +58,7 @@ func (m *redisRepository) Store(redirect *service.Redirect) error {
 	data := map[string]interface{}{
 		"code":       redirect.Code,
 		"url":        redirect.URL,
-		"created_at": redirect.CreatedAt,
+		"created_at": redirect.CreatedAt.Format("2006-01-02 15:04:05"),
 	}
 
 	err := m.client.HMSet(m.generateKey(redirect.Code), data)
