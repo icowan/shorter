@@ -46,4 +46,4 @@ push:
 	docker push $(HUB_ADDR)/$(NAMESPACE)/$(APPNAME):$(TAG)
 
 run:
-	GO111MODULE=on $(GORUN) ./cmd/main.go -http-addr :8080
+	GO111MODULE=on $(GORUN) ./cmd/main.go -http-addr :8080 -dev-cors true

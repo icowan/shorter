@@ -27,6 +27,7 @@ var (
 
 func NewHTTPHandler(endpoints endpoint.Endpoints, options map[string][]kithttp.ServerOption) http.Handler {
 	r := mux.NewRouter()
+	r.PathPrefix("/static/").Handler(http.StripPrefix("/static/", http.FileServer(http.Dir("./dist/static/"))))
 	r.Handle("/", http.FileServer(http.Dir("./dist"))).Methods(http.MethodGet)
 	r.Handle("/umi.js", http.FileServer(http.Dir("./dist"))).Methods(http.MethodGet)
 	r.Handle("/umi.css", http.FileServer(http.Dir("./dist"))).Methods(http.MethodGet)
