@@ -115,4 +115,5 @@ func (c *single) Exists(k string) (bool, error) {
 	if res > -1 {
 		return true, nil
 	}
+	return false, nil
 }

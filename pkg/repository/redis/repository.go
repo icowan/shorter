@@ -18,6 +18,10 @@ type redisRepository struct {
 	client RedisInterface
 }
 
+func (m *redisRepository) Exists(has string) (exists bool, err error) {
+	return
+}
+
 func NewRedisRepository(drive RedisDrive, hosts, password, prefix string, database int) (service.Repository, error) {
 	rdsClient := NewRedisClient(drive, hosts, password, prefix, database)
 
