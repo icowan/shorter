@@ -23,6 +23,7 @@ type RedisInterface interface {
 	HGetAll(key string) (map[string]string, error)
 	HDelAll(k string) (err error)
 	HDel(k string, field string) (err error)
+	Exists(k string) (bool, error)
 	Close() error
 	Subscribe(channels ...string) *redis.PubSub
 	Publish(channel string, message interface{}) error

@@ -10,4 +10,5 @@ package service
 type Repository interface {
 	Find(code string) (redirect *Redirect, err error)
 	Store(redirect *Redirect) error
+	Exists(has string) (exists bool, err error)
 }

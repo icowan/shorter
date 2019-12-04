@@ -104,3 +104,13 @@ func (c *cluster) HGetAll(key string) (map[string]string, error) {
 func (c *cluster) HMSet(k string, fields map[string]interface{}) (err error) {
 	return c.client.HMSet(c.setPrefix(k), fields).Err()
 }
+
+func (c *cluster) Exists(k string) (bool, error) {
+	res, err := c.client.Exists(c.setPrefix(k)).Result()
+	if err != nil {
+		return false, err
+	}
+	if res > -1 {
+		return true, nil
+	}
+}

@@ -68,3 +68,7 @@ func (s *service) Post(ctx context.Context, domain string) (redirect *Redirect, 
 	redirect.URL = strings.TrimRight(s.shortUri, "/") + "/" + code
 	return
 }
+
+func (s *service) exists(domain string) (redirect *Redirect, err error) {
+	return
+}
