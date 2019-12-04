@@ -81,7 +81,7 @@ func (m *mongoRepository) Store(redirect *service.Redirect) error {
 	_, err := collection.InsertOne(ctx, bson.M{
 		"code":       redirect.Code,
 		"url":        redirect.URL,
-		"created_at": redirect.CreatedAt,
+		"created_at": redirect.CreatedAt.Format("2006-01-02 15:04:05"),
 	})
 
 	if err != nil {
