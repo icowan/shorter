@@ -48,12 +48,12 @@ func addDefaultServiceMiddleware(logger log.Logger, mw []service.Middleware) []s
 func addDefaultEndpointMiddleware(logger log.Logger, mw map[string][]kitendpoint.Middleware) map[string][]kitendpoint.Middleware {
 	mw["Post"] = append(mw["Post"],
 		endpoint.LoggingMiddleware(logger),
-		endpoint.NewTokenBucketLimitter(rate.NewLimiter(rate.Every(time.Second*1), rateBucketNum)),
+		endpoint.NewTokenBucketLimitter(rate.NewLimiter(rate.Every(time.Second*1), *rateBucketNum)),
 	)
 
 	mw["Get"] = append(mw["Get"],
 		endpoint.LoggingMiddleware(logger),
-		endpoint.NewTokenBucketLimitter(rate.NewLimiter(rate.Every(time.Second*1), rateBucketNum*10)),
+		endpoint.NewTokenBucketLimitter(rate.NewLimiter(rate.Every(time.Second*1), *rateBucketNum*100)),
 	)
 
 	return mw

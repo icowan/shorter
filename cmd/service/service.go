@@ -44,7 +44,7 @@ var (
 	logPath       = fs.String("log-path", "", "logging file path.")
 	logLevel      = fs.String("log-level", "all", "logging level.")
 	devCors       = fs.String("dev-cors", "false", "is develop")
-	rateBucketNum = 10
+	rateBucketNum = fs.Int("rate-bucket", 10, "rate bucket num")
 	err           error
 )
 
