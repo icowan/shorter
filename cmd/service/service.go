@@ -63,6 +63,7 @@ func Run() {
 	logPath = envString("LOG_PATH", logPath)
 	logLevel = envString("LOG_LEVEL", logLevel)
 	devCors = envString("DEV_CORS", devCors)
+	rateBucketNum = envInt("RATE_BUCKET", rateBucketNum)
 
 	logger = logging.SetLogging(logger, logPath, logLevel)
 
@@ -167,4 +168,14 @@ func envString(env string, fallback *string) *string {
 		return fallback
 	}
 	return &e
+}
+
+func envInt(env string, fallback *int) *int {
+	e := os.Getenv(env)
+	if e == "" {
+		_ = os.Setenv(env, strconv.Itoa(*fallback))
+		return fallback
+	}
+	num, _ := strconv.Atoi(e)
+	return &num
 }
