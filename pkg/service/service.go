@@ -30,18 +30,22 @@ type service struct {
 	repository Repository
 	logger     log.Logger
 	shortUri   string
+	maxLen     int
 }
 
-func New(middleware []Middleware, logger log.Logger, repository Repository, shortUri string) Service {
-	var svc Service = NewService(logger, repository, shortUri)
+func New(middleware []Middleware, logger log.Logger, repository Repository, shortUri string, maxLength int) Service {
+	var svc Service = NewService(logger, repository, shortUri, maxLength)
 	for _, m := range middleware {
 		svc = m(svc)
 	}
 	return svc
 }
 
-func NewService(logger log.Logger, repository Repository, shortUri string) Service {
-	return &service{repository: repository, shortUri: shortUri, logger: logger}
+func NewService(logger log.Logger, repository Repository, shortUri string, maxLength int) Service {
+	if maxLength > 9 {
+		maxLength = 9
+	}
+	return &service{repository: repository, shortUri: shortUri, logger: logger, maxLen: maxLength}
 }
 
 func (s *service) Get(ctx context.Context, code string) (redirect *Redirect, err error) {
@@ -52,8 +56,11 @@ func (s *service) Post(ctx context.Context, domain string) (redirect *Redirect, 
 	now := time.Now()
 	now = now.In(time.Local)
 	code := shortid.MustGenerate()
-
 	// todo 考虑如何处理垃圾数据的问题 得复的url 不同的code
+
+	if s.maxLen > 0 {
+		code = code[:s.maxLen]
+	}
 
 	redirect = &Redirect{
 		Code:      code,

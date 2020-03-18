@@ -45,6 +45,7 @@ var (
 	logLevel      = fs.String("log-level", "all", "logging level.")
 	devCors       = fs.String("dev-cors", "false", "is develop")
 	rateBucketNum = fs.Int("rate-bucket", 10, "rate bucket num")
+	maxLength     = fs.Int("max-length", -1, "code length")
 	err           error
 )
 
@@ -64,6 +65,7 @@ func Run() {
 	logLevel = envString("LOG_LEVEL", logLevel)
 	devCors = envString("DEV_CORS", devCors)
 	rateBucketNum = envInt("RATE_BUCKET", rateBucketNum)
+	maxLength = envInt("MAX_LENGTH", maxLength)
 
 	logger = logging.SetLogging(logger, logPath, logLevel)
 
@@ -84,7 +86,7 @@ func Run() {
 		}
 	}
 
-	svc := service.New(getServiceMiddleware(logger), logger, repo, *shortUri)
+	svc := service.New(getServiceMiddleware(logger), logger, repo, *shortUri, *maxLength)
 	eps := endpoint.New(svc, getEndpointMiddleware(logger))
 	g := createService(eps)
 	initCancelInterrupt(g)
