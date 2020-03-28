@@ -56,7 +56,12 @@ func (s *service) Get(ctx context.Context, code string) (redirect *Redirect, err
 func (s *service) Post(ctx context.Context, domain string) (redirect *Redirect, err error) {
 	now := time.Now()
 	now = now.In(time.Local)
-	code, _ := shortid.MustNew(0, s.alphabet, 1).Generate()
+	var code string
+	if s.alphabet != "" {
+		code, _ = shortid.MustNew(0, s.alphabet, 1).Generate()
+	} else {
+		code = shortid.MustGenerate()
+	}
 	// todo 考虑如何处理垃圾数据的问题 得复的url 不同的code
 
 	if s.maxLen > 0 {
