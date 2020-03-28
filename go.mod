@@ -23,7 +23,6 @@ require (
 	github.com/pkg/errors v0.8.1
 	github.com/sirupsen/logrus v1.4.2
 	github.com/tebeka/strftime v0.1.3 // indirect
-	github.com/teris-io/shortid v0.0.0-20171029131806-771a37caa5cf
 	github.com/tidwall/pretty v1.0.0 // indirect
 	github.com/xdg/scram v0.0.0-20180814205039-7eeb5667e42c // indirect
 	github.com/xdg/stringprep v1.0.0 // indirect

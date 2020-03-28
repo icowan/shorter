@@ -35,7 +35,7 @@ var (
 	fs            = flag.NewFlagSet("hello", flag.ExitOnError)
 	httpAddr      = fs.String("http-addr", ":8080", "HTTP listen address")
 	dbDrive       = fs.String("db-drive", "mongo", "db drive type, default: mongo")
-	mongoAddr     = fs.String("mongo-addr", "mongodb://localhost:32768", "mongodb uri, default: mongodb://localhost:27017")
+	mongoAddr     = fs.String("mongo-addr", "mongodb://root:admin@localhost:27017/?authSource=admin", "mongodb uri, default: mongodb://localhost:27017")
 	redisDrive    = fs.String("redis-drive", "single", "redis drive: single or cluster")
 	redisHosts    = fs.String("redis-hosts", "localhost:6379", "redis hosts, many ';' split")
 	redisPassword = fs.String("redis-password", "", "redis password")
@@ -46,7 +46,7 @@ var (
 	devCors       = fs.String("dev-cors", "false", "is develop")
 	rateBucketNum = fs.Int("rate-bucket", 10, "rate bucket num")
 	maxLength     = fs.Int("max-length", -1, "code length")
-	alphabet      = fs.String("alphabet", "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ", "alphabet length")
+	alphabet      = fs.String("alphabet", "", "alphabet length")
 	err           error
 )
 

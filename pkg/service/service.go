@@ -10,8 +10,8 @@ package service
 import (
 	"context"
 	"github.com/go-kit/kit/log"
+	"github.com/icowan/shorter/pkg/shortid"
 	"github.com/pkg/errors"
-	"github.com/teris-io/shortid"
 	"strings"
 	"time"
 )
@@ -57,11 +57,13 @@ func (s *service) Post(ctx context.Context, domain string) (redirect *Redirect, 
 	now := time.Now()
 	now = now.In(time.Local)
 	var code string
+	code = shortid.MustGenerate()
 	if s.alphabet != "" {
-		code, _ = shortid.MustNew(0, s.alphabet, 1).Generate()
-	} else {
-		code = shortid.MustGenerate()
+		for _, v := range s.alphabet {
+			code = strings.ReplaceAll(code, string(v), "")
+		}
 	}
+
 	// todo 考虑如何处理垃圾数据的问题 得复的url 不同的code
 
 	if s.maxLen > 0 {
