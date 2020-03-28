@@ -46,6 +46,7 @@ var (
 	devCors       = fs.String("dev-cors", "false", "is develop")
 	rateBucketNum = fs.Int("rate-bucket", 10, "rate bucket num")
 	maxLength     = fs.Int("max-length", -1, "code length")
+	alphabet      = fs.String("alphabet", "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ", "alphabet length")
 	err           error
 )
 
@@ -64,6 +65,7 @@ func Run() {
 	logPath = envString("LOG_PATH", logPath)
 	logLevel = envString("LOG_LEVEL", logLevel)
 	devCors = envString("DEV_CORS", devCors)
+	alphabet = envString("ALPHABET", alphabet)
 	rateBucketNum = envInt("RATE_BUCKET", rateBucketNum)
 	maxLength = envInt("MAX_LENGTH", maxLength)
 
@@ -86,7 +88,7 @@ func Run() {
 		}
 	}
 
-	svc := service.New(getServiceMiddleware(logger), logger, repo, *shortUri, *maxLength)
+	svc := service.New(getServiceMiddleware(logger), logger, repo, *shortUri, *maxLength, *alphabet)
 	eps := endpoint.New(svc, getEndpointMiddleware(logger))
 	g := createService(eps)
 	initCancelInterrupt(g)

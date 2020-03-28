@@ -31,21 +31,22 @@ type service struct {
 	logger     log.Logger
 	shortUri   string
 	maxLen     int
+	alphabet   string
 }
 
-func New(middleware []Middleware, logger log.Logger, repository Repository, shortUri string, maxLength int) Service {
-	var svc Service = NewService(logger, repository, shortUri, maxLength)
+func New(middleware []Middleware, logger log.Logger, repository Repository, shortUri string, maxLength int, alphabet string) Service {
+	var svc Service = NewService(logger, repository, shortUri, maxLength, alphabet)
 	for _, m := range middleware {
 		svc = m(svc)
 	}
 	return svc
 }
 
-func NewService(logger log.Logger, repository Repository, shortUri string, maxLength int) Service {
+func NewService(logger log.Logger, repository Repository, shortUri string, maxLength int, alphabet string) Service {
 	if maxLength > 9 {
 		maxLength = 9
 	}
-	return &service{repository: repository, shortUri: shortUri, logger: logger, maxLen: maxLength}
+	return &service{repository: repository, shortUri: shortUri, logger: logger, maxLen: maxLength, alphabet: alphabet}
 }
 
 func (s *service) Get(ctx context.Context, code string) (redirect *Redirect, err error) {
@@ -55,7 +56,7 @@ func (s *service) Get(ctx context.Context, code string) (redirect *Redirect, err
 func (s *service) Post(ctx context.Context, domain string) (redirect *Redirect, err error) {
 	now := time.Now()
 	now = now.In(time.Local)
-	code := shortid.MustGenerate()
+	code, _ := shortid.MustNew(0, s.alphabet, 1).Generate()
 	// todo 考虑如何处理垃圾数据的问题 得复的url 不同的code
 
 	if s.maxLen > 0 {
