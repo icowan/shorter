@@ -1,0 +1,30 @@
+syntax = "proto3";
+
+package pb;
+
+service Shorter {
+    rpc Get (GetRequest) returns (ServiceResponse) {
+    }
+
+    rpc Post (PostRequest) returns (ServiceResponse) {
+    }
+}
+
+message GetRequest {
+    string code = 1;
+}
+
+message PostRequest {
+    string domain = 1;
+}
+
+message ServiceResponse {
+    string err = 1;
+    ResponseData data = 2;
+}
+
+message ResponseData {
+    string url = 1;
+    string code = 2;
+    string short_uri = 3;
+}

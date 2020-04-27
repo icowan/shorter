@@ -11,6 +11,7 @@ import (
 	kitendpoint "github.com/go-kit/kit/endpoint"
 	"github.com/go-kit/kit/log"
 	"github.com/go-kit/kit/transport"
+	kitgrpc "github.com/go-kit/kit/transport/grpc"
 	kithttp "github.com/go-kit/kit/transport/http"
 	"github.com/icowan/shorter/pkg/endpoint"
 	"github.com/icowan/shorter/pkg/http"
@@ -23,6 +24,7 @@ import (
 func createService(endpoints endpoint.Endpoints) (g *group.Group) {
 	g = &group.Group{}
 	initHttpHandler(endpoints, g)
+	initGrpcHandler(endpoints, g)
 	return g
 }
 
@@ -37,7 +39,20 @@ func defaultHttpOptions(logger log.Logger) map[string][]kithttp.ServerOption {
 			kithttp.ServerErrorHandler(transport.NewLogErrorHandler(logger)),
 			kithttp.ServerBefore(kithttp.PopulateRequestContext),
 		}}
+
 	return options
+}
+
+func defaultGrpcOptions(logger log.Logger) map[string][]kitgrpc.ServerOption {
+	return map[string][]kitgrpc.ServerOption{
+		"Get": {
+			kitgrpc.ServerErrorHandler(transport.NewLogErrorHandler(logger)),
+		},
+		"Post": {
+			kitgrpc.ServerErrorHandler(transport.NewLogErrorHandler(logger)),
+		},
+	}
+
 }
 
 func addDefaultServiceMiddleware(logger log.Logger, mw []service.Middleware) []service.Middleware {

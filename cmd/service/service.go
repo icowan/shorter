@@ -10,14 +10,8 @@ package service
 import (
 	"flag"
 	"fmt"
-	kitendpoint "github.com/go-kit/kit/endpoint"
-	"github.com/go-kit/kit/log/level"
-	"github.com/icowan/shorter/pkg/endpoint"
-	svchttp "github.com/icowan/shorter/pkg/http"
-	"github.com/icowan/shorter/pkg/logging"
-	"github.com/icowan/shorter/pkg/repository/mongodb"
-	"github.com/icowan/shorter/pkg/repository/redis"
-	"github.com/icowan/shorter/pkg/service"
+	"github.com/icowan/shorter/pkg/grpc"
+	"github.com/icowan/shorter/pkg/grpc/pb"
 	"net"
 	"net/http"
 	"os"
@@ -25,8 +19,18 @@ import (
 	"strconv"
 	"syscall"
 
+	kitendpoint "github.com/go-kit/kit/endpoint"
 	"github.com/go-kit/kit/log"
+	"github.com/go-kit/kit/log/level"
 	"github.com/oklog/oklog/pkg/group"
+	googlegrpc "google.golang.org/grpc"
+
+	"github.com/icowan/shorter/pkg/endpoint"
+	svchttp "github.com/icowan/shorter/pkg/http"
+	"github.com/icowan/shorter/pkg/logging"
+	"github.com/icowan/shorter/pkg/repository/mongodb"
+	"github.com/icowan/shorter/pkg/repository/redis"
+	"github.com/icowan/shorter/pkg/service"
 )
 
 var logger log.Logger
@@ -34,6 +38,7 @@ var logger log.Logger
 var (
 	fs            = flag.NewFlagSet("hello", flag.ExitOnError)
 	httpAddr      = fs.String("http-addr", ":8080", "HTTP listen address")
+	grpcAddr      = fs.String("grpc-addr", ":8082", "Grpc listen address")
 	dbDrive       = fs.String("db-drive", "mongo", "db drive type, default: mongo")
 	mongoAddr     = fs.String("mongo-addr", "mongodb://root:admin@localhost:27017/?authSource=admin", "mongodb uri, default: mongodb://localhost:27017")
 	redisDrive    = fs.String("redis-drive", "single", "redis drive: single or cluster")
@@ -117,8 +122,26 @@ func initHttpHandler(endpoints endpoint.Endpoints, g *group.Group) {
 	}, func(error) {
 		_ = httpListener.Close()
 	})
-
 }
+
+func initGrpcHandler(endpoints endpoint.Endpoints, g *group.Group) {
+	options := defaultGrpcOptions(logger)
+
+	grpcListener, err := net.Listen("tcp", *grpcAddr)
+	if err != nil {
+		_ = logger.Log("transport", "gRPC", "during", "Listen", "err", err)
+	}
+
+	g.Add(func() error {
+		_ = level.Debug(logger).Log("transport", "GRPC", "addr", *grpcAddr)
+		baseServer := googlegrpc.NewServer()
+		pb.RegisterShorterServer(baseServer, grpc.MakeGRPCHandler(endpoints, options))
+		return baseServer.Serve(grpcListener)
+	}, func(error) {
+		_ = level.Error(logger).Log("transport", "GRPC", "grpcListener.Close", grpcListener.Close())
+	})
+}
+
 func getServiceMiddleware(logger log.Logger) (mw []service.Middleware) {
 	mw = []service.Middleware{}
 	mw = addDefaultServiceMiddleware(logger, mw)
