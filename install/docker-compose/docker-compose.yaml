@@ -16,7 +16,7 @@ services:
     environment:
       DB_DRIVE: "mongo"
       MONGO_ADDR: "mongodb://root:admin@mongo:27017/?authSource=admin"
-      SHORT_URI: "http://localhost:8080"
+      SHORT_URI: "http://localhost"
       LOG_LEVEL: "debug"
       MAX_LENGTH: 6
     restart: always

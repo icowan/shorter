@@ -118,6 +118,7 @@ func initHttpHandler(endpoints endpoint.Endpoints, g *group.Group) {
 				"Access-Control-Allow-Headers": "Origin,Content-Type,mode,Authorization,x-requested-with,Access-Control-Allow-Origin,Access-Control-Allow-Credentials",
 			}
 		}
+		http.Handle("/", http.StripPrefix("/", http.FileServer(http.Dir("./dist/"))))
 		return http.Serve(httpListener, accessControl(httpHandler, logger, headers))
 	}, func(error) {
 		_ = httpListener.Close()
