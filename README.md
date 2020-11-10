@@ -52,6 +52,10 @@ $ cd shorter
 $ make run
 ```
 
+3. transport
+  - http: 8080
+  - gRPC: 8082
+
 ### 支持我
 
 ![微信](https://lattecake.oss-cn-beijing.aliyuncs.com/static%2Fimages%2Freward%2Fweixin-RMB-xxx.JPG)
