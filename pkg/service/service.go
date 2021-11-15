@@ -21,6 +21,8 @@ var (
 	ErrRedirectInvalid  = errors.New("Redirect Invalid")
 )
 
+type Middleware func(svc Service) Service
+
 type Service interface {
 	Get(ctx context.Context, code string) (redirect *Redirect, err error)
 	Post(ctx context.Context, domain string) (redirect *Redirect, err error)

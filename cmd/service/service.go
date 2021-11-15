@@ -52,6 +52,7 @@ var (
 	rateBucketNum = fs.Int("rate-bucket", 10, "rate bucket num")
 	maxLength     = fs.Int("max-length", -1, "code length")
 	alphabet      = fs.String("alphabet", "", "alphabet length")
+	cacheCap      = fs.Int("cache-cap", 2048, "cacheCap length")
 	err           error
 )
 
@@ -73,6 +74,7 @@ func Run() {
 	alphabet = envString("ALPHABET", alphabet)
 	rateBucketNum = envInt("RATE_BUCKET", rateBucketNum)
 	maxLength = envInt("MAX_LENGTH", maxLength)
+	cacheCap = envInt("CACHE_CAP", cacheCap)
 
 	logger = logging.SetLogging(logger, logPath, logLevel)
 
@@ -145,8 +147,7 @@ func initGrpcHandler(endpoints endpoint.Endpoints, g *group.Group) {
 
 func getServiceMiddleware(logger log.Logger) (mw []service.Middleware) {
 	mw = []service.Middleware{}
-	mw = addDefaultServiceMiddleware(logger, mw)
-
+	mw = addDefaultServiceMiddleware(logger, mw, *cacheCap)
 	return
 }
 func getEndpointMiddleware(logger log.Logger) (mw map[string][]kitendpoint.Middleware) {

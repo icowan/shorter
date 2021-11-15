@@ -55,8 +55,8 @@ func defaultGrpcOptions(logger log.Logger) map[string][]kitgrpc.ServerOption {
 
 }
 
-func addDefaultServiceMiddleware(logger log.Logger, mw []service.Middleware) []service.Middleware {
-	mw = append(mw, service.LoggingMiddleware(logger))
+func addDefaultServiceMiddleware(logger log.Logger, mw []service.Middleware, cacheCap int) []service.Middleware {
+	mw = append(mw, service.NewLogging(logger, "traceId"), service.NewCache(logger, "traceId", cacheCap))
 	return mw
 }
 
