@@ -12,7 +12,6 @@ import (
 	"encoding/json"
 	"errors"
 	"github.com/go-kit/kit/log"
-	"github.com/go-kit/kit/log/level"
 )
 
 type lruCache struct {
@@ -92,17 +91,14 @@ type cache struct {
 func (s *cache) Get(ctx context.Context, code string) (redirect *Redirect, err error) {
 	get, err := s.lruCache.Get(ctx, code)
 	if err == nil {
-		err = json.Unmarshal(get, &redirect)
-		if err == nil {
+		if err = json.Unmarshal(get, &redirect); err == nil {
 			return redirect, nil
 		}
-		_ = level.Error(s.logger).Log("json", "Unmarshal", "err", err.Error())
 	}
 	defer func() {
 		b, _ := json.Marshal(redirect)
 		s.lruCache.Put(ctx, code, b)
 	}()
-	_ = level.Warn(s.logger).Log("lruCache", "Get", "err", err.Error())
 	return s.next.Get(ctx, code)
 }
 
